@@ -1,0 +1,2 @@
+[default.databases.diesel_mysql]
+url = "mysql://root:1234@127.0.0.1/rt_chat"
