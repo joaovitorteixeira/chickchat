@@ -4,8 +4,16 @@ use crate::{
     Result,
 };
 use rocket::{
-    response::status::Created,
+    response::{
+        status::Created,
+        stream::{Event, EventStream},
+    },
     serde::{json::Json, Deserialize, Serialize},
+    tokio::{
+        select,
+        sync::broadcast::{error::RecvError, Sender},
+    },
+    Shutdown, State,
 };
 use rocket_db_pools::{diesel::prelude::*, Connection};
 
@@ -23,8 +31,10 @@ pub struct Message {
 
 #[derive(FromForm)]
 pub struct ListMessage {
+    #[field(validate = range(1..=100))]
     limit: u8,
 
+    #[field(validate = len(ulid::ULID_LEN..=ulid::ULID_LEN))]
     last_id: Option<String>,
 }
 
@@ -33,6 +43,7 @@ pub async fn send_message(
     chat_id: &str,
     mut message: Json<Message>,
     mut db_conn: Connection<DbConn>,
+    queue: &State<Sender<Message>>,
 ) -> Result<Created<Json<Message>>> {
     message.chat_id = chat_id.to_string();
     message.id = ulid::Ulid::new().to_string();
@@ -50,6 +61,8 @@ pub async fn send_message(
         })
         .await?;
 
+    let _res = queue.send(message.clone().into_inner());
+
     Ok(Created::new(format!("/chat/{}/message/{}", chat_id, message.id)).body(message))
 }
 
@@ -64,7 +77,6 @@ pub async fn list_messages(
         .into_boxed();
 
     if let Some(last_id) = list_query.last_id {
-        print!("{}", last_id);
         query = query.filter(message::id.lt(last_id));
     }
 
@@ -76,4 +88,27 @@ pub async fn list_messages(
         .await?;
 
     Ok(Json(messages))
+}
+
+#[get("/event")]
+pub async fn get_message_event(
+    queue: &State<Sender<Message>>,
+    mut end: Shutdown,
+) -> EventStream![] {
+    let mut rx = queue.subscribe();
+
+    EventStream! {
+        loop {
+            let msg = select! {
+                msg = rx.recv() => match msg {
+                    Ok(msg) => msg,
+                    Err(RecvError::Closed) => break,
+                    Err(RecvError::Lagged(_)) => continue,
+                },
+                _ = &mut end => break,
+            };
+
+            yield Event::json(&msg);
+        }
+    }
 }
