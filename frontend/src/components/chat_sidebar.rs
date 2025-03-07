@@ -4,7 +4,7 @@ use leptos::prelude::*;
 pub fn Sidebar() -> impl IntoView {
     view! {
         <div class="chat-sidebar">
-            <h2>"Chats"</h2>
+            <h2>"Chickchat 🐣"</h2>
         </div>
     }
 }

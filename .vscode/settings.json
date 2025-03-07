@@ -1,6 +1,6 @@
 {
   "editor.formatOnSave": true,
-  "cSpell.words": ["Insertable", "leptos", "stylance"],
+  "cSpell.words": ["Chickchat", "Insertable", "leptos", "stylance"],
   "rust-analyzer.rustfmt.overrideCommand": [
     "leptosfmt",
     "--stdin",
