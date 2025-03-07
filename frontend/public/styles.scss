@@ -1,0 +1,97 @@
+/* --------------------- Open Props --------------------------- */
+
+/* the props */
+@import "https://unpkg.com/open-props";
+
+/* optional imports that use the props */
+@import "https://unpkg.com/open-props/normalize.min.css";
+@import "https://unpkg.com/open-props/buttons.min.css";
+
+/* ------------------------------------------------------------ */
+
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-align: center;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+p,
+button {
+  margin: var(--size-6);
+}
+
+body > picture,
+button {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  margin: 2rem;
+}
+
+.chat-container {
+  display: flex;
+  justify-content: flex-start;
+  height: 100vh;
+}
+
+.chat-sidebar {
+  width: 30%;
+  background: #e0d7d7;
+}
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 10px;
+  justify-content: flex-end;
+  width: 70%;
+}
+
+.message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.message-input {
+  width: 100%;
+  min-height: 3rem;  
+  max-height: 10rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.message-send {
+  height: 3rem;
+  padding: 0 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 1px;
+  align-self: flex-end;
+}
