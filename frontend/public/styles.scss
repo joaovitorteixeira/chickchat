@@ -126,4 +126,8 @@ button {
   border-radius: 5px;
   background: var(--primary-color);
   color: var(--secondary-color);
+  max-width: 50%;
+  text-align: left;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
