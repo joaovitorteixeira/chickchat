@@ -85,7 +85,7 @@ button {
 .message-input-container {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
   position: sticky;
 }
 
@@ -110,6 +110,12 @@ button {
   align-self: flex-end;
   border-color: var(--secondary-color);
   background: var(--secondary-color-dark);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .message-list {

@@ -13,7 +13,10 @@ leptos_router = { version = "0.7" }
 console_log = "1"
 log = "0.4"
 console_error_panic_hook = "0.1"
-
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+leptos_icons = "0.5.0"
+icondata = "0.5.0"
 # utils
 # strum = { version = "0.25", features = ["derive", "strum_macros"] }
 # strum_macros = "0.25"

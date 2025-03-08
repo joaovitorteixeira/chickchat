@@ -1,18 +1,35 @@
 use leptos::{
-    ev::Targeted,
-    prelude::*,
-    web_sys::{Event, HtmlTextAreaElement, KeyboardEvent},
+    ev::Targeted, prelude::*, web_sys::{Event, HtmlTextAreaElement, KeyboardEvent}
 };
+use leptos_icons::Icon;
+use icondata as icon;
+use crate::models::message::{Message, MessageWithStatus};
+
+async fn send_message(input: &str) -> MessageWithStatus {
+        let mut message = Message::new(input.to_string(), "TODO".to_string(), "TODO".to_string());
+        let message_data = message.send().await;
+
+        message_data
+
+}
 
 #[component]
-pub fn MessageInput(set_message: WriteSignal<Vec<String>>) -> impl IntoView {
+pub fn MessageInput(set_message: WriteSignal<Vec<MessageWithStatus>>) -> impl IntoView {
     let (input, set_input) = signal(String::new());
-    let send_message = move || {
-        if !input.get().is_empty() {
-            set_message.write().push(input.get());
-            set_input.set(String::new());
+    let (is_sending, set_is_sending) = signal(false);
+    let _ = LocalResource::new(move || {
+        let is_sending = is_sending.get();
+        async move {
+            if is_sending && !input.get().is_empty() {
+                let input = input.get();
+                let new_message = send_message(&input).await;
+
+                set_message.write().push(new_message);
+                set_input.set(String::new());
+                set_is_sending.set(false);
+            }
         }
-    };
+    });
     let input_handler = move |e: Targeted<Event, HtmlTextAreaElement>| {
         let value = e.target().value();
 
@@ -23,7 +40,7 @@ pub fn MessageInput(set_message: WriteSignal<Vec<String>>) -> impl IntoView {
             "Enter" => {
                 if !e.shift_key() {
                     e.prevent_default();
-                    send_message();
+                    set_is_sending.set(true);
                 }
             }
             _ => (),
@@ -39,9 +56,23 @@ pub fn MessageInput(set_message: WriteSignal<Vec<String>>) -> impl IntoView {
                 on:keydown=keydown_handler
                 prop:value=input
             />
-            <button class="message-send" on:click=move |_| send_message()>
-                "Send"
+            <button class="message-send" on:click=move |_| set_is_sending.set(true)>
+                <Icon
+                    style="height: 2rem; width: 2rem;"
+                    icon=Signal::derive(move || {
+                        if is_sending.get() {
+                            icon::AiLoadingOutlined
+                        } else {
+                            icon::RiSendPlaneBusinessFill
+                        }
+                    })
+                    style:animation=move || {
+                        if is_sending.get() { "spin 1s linear infinite" } else { "None" }
+                    }
+                />
+
             </button>
+
         </div>
     }
 }

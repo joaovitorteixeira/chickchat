@@ -1,7 +1,9 @@
 use leptos::prelude::*;
 
+use crate::models::message::MessageWithStatus;
+
 #[component]
-pub fn MessageList(messages: ReadSignal<Vec<String>>) -> impl IntoView {
+pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>) -> impl IntoView {
     view! {
         <div class="message-list">
             {move || {
@@ -9,7 +11,7 @@ pub fn MessageList(messages: ReadSignal<Vec<String>>) -> impl IntoView {
                     .read()
                     .iter()
                     .enumerate()
-                    .map(|(index, message)| {
+                    .map(|(index, new_message)| {
                         view! {
                             <div
                                 class="message-item"
@@ -19,7 +21,7 @@ pub fn MessageList(messages: ReadSignal<Vec<String>>) -> impl IntoView {
                                     "flex-end"
                                 }
                             >
-                                {message.clone()}
+                                {new_message.message.content.clone()}
                             </div>
                         }
                     })
