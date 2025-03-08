@@ -1,3 +1,4 @@
+use cors::CORS;
 use message::{get_message_event, list_messages, send_message, Message};
 use rocket::{response::Debug, tokio::sync::broadcast::channel};
 
@@ -6,6 +7,7 @@ extern crate rocket;
 
 pub type Result<T, E = Debug<diesel::result::Error>> = std::result::Result<T, E>;
 
+mod cors;
 mod database;
 mod message;
 pub mod schema;
@@ -19,4 +21,5 @@ fn rocket() -> _ {
             routes![send_message, list_messages, get_message_event],
         )
         .attach(database::stage())
+        .attach(CORS)
 }
