@@ -25,7 +25,7 @@ pub fn MessageInput() -> impl IntoView {
                 let input = input.get();
                 let new_message = send_message(&input).await;
 
-                set_message.write().push(new_message);
+                set_message.write().insert(0, new_message);
                 set_input.set(String::new());
                 set_is_sending.set(false);
             }
