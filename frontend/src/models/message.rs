@@ -1,6 +1,7 @@
 use leptos::{prelude::{Write, WriteSignal}, wasm_bindgen::{prelude::Closure, JsCast}, web_sys::{EventSource, MessageEvent}};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use super::user::User;
 
 #[derive(Clone, Debug)]
 pub enum MessageStatus {
@@ -78,16 +79,18 @@ impl Message {
         let event_source = EventSource::new(&format!("http://127.0.0.1:8000/chat/{}/event", chat_id)).unwrap();
         let on_message = Closure::wrap(Box::new(move |event: MessageEvent| {
             let data = event.data().as_string().unwrap();
-            set_messages.write().insert(0, MessageWithStatus {
+            let message = MessageWithStatus {
                 message: serde_json::from_str(&data).unwrap(),
                 _status: MessageStatus::Sent,
-            });
+            };
+            let user = User::get_user_from_session_storage();
+            
+            if message.message.user_id != user.id {
+                set_messages.write().insert(0, message);
+            }
         }) as Box<dyn FnMut(MessageEvent)>);
 
-        // Add the event listener to the EventSource
         event_source.add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
-
-        // Keep the closure alive
         on_message.forget();
     }
 }

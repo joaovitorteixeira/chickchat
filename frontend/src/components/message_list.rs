@@ -2,13 +2,14 @@ use std::sync::Arc;
 
 use leptos::{html::Div, prelude::*, task::spawn_local,};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
-use crate::models::message::{Message, MessageWithStatus};
+use crate::models::{message::{Message, MessageWithStatus}, user::User};
 
 #[component]
 pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String) -> impl IntoView {
     let set_messages = use_context::<WriteSignal<Vec<MessageWithStatus>>>().expect("to have found the setter provided");
     let (has_more, set_has_more) = signal(true);
     let el = NodeRef::<Div>::new();
+    let user = User::get_user_from_session_storage();
     //TODO: any way to improve this?
     let chat_id = Arc::new(chat_id);
     let get_old_messages= async move |chat_id: String| -> bool {
@@ -67,11 +68,11 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
                     .read()
                     .iter()
                     .enumerate()
-                    .map(|(index, new_message)| {
+                    .map(|(_, new_message)| {
                         view! {
                             <div
                                 class="message-item"
-                                style:align-self=if index % 2 == 0 {
+                                style:align-self=if new_message.message.user_id != user.id {
                                     "flex-start"
                                 } else {
                                     "flex-end"

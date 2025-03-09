@@ -3,10 +3,11 @@ use leptos::{
 };
 use leptos_icons::Icon;
 use icondata as icon;
-use crate::models::message::{Message, MessageWithStatus};
+use crate::models::{message::{Message, MessageWithStatus}, user::User};
 
 async fn send_message(input: &str) -> MessageWithStatus {
-        let mut message = Message::new(input.to_string(), "TODO".to_string(), "TODO".to_string());
+        let user = User::get_user_from_session_storage();
+        let mut message = Message::new(input.to_string(), user.id, "TODO".to_string());
         let message_data = message.send().await;
 
         message_data
