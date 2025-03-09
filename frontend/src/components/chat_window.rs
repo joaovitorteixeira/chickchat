@@ -8,10 +8,13 @@ use crate::{
 #[component]
 pub fn ChatWindow() -> impl IntoView {
     let (messages, set_messages) = signal(Vec::<MessageWithStatus>::new());
+
+    provide_context(set_messages);
+
     view! {
         <div class="chat-window">
             <MessageList messages=messages />
-            <MessageInput set_message=set_messages />
+            <MessageInput />
         </div>
     }
 }

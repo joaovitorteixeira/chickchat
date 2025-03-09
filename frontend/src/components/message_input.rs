@@ -14,7 +14,8 @@ async fn send_message(input: &str) -> MessageWithStatus {
 }
 
 #[component]
-pub fn MessageInput(set_message: WriteSignal<Vec<MessageWithStatus>>) -> impl IntoView {
+pub fn MessageInput() -> impl IntoView {
+    let set_message = use_context::<WriteSignal<Vec<MessageWithStatus>>>().expect("to have found the setter provided");
     let (input, set_input) = signal(String::new());
     let (is_sending, set_is_sending) = signal(false);
     let _ = LocalResource::new(move || {

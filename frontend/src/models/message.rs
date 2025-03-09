@@ -33,6 +33,7 @@ impl Message {
      pub async fn send(&mut self) -> MessageWithStatus {
         let client = Client::new();
         let fetcher = client
+        // TODO: Change to env
             .post(format!("http://127.0.0.1:8000/chat/{}/message", self.chat_id))
             .json(&self)
             .send().await;
@@ -41,9 +42,9 @@ impl Message {
             
         match fetcher {
             Ok(_) => {
-                // let created_message = fetcher.unwrap().json::<Message>().await.unwrap();
+                let created_message = fetcher.unwrap().json::<Message>().await.unwrap();
                 
-                // self.id = created_message.id;
+                self.id = created_message.id;
 
                 MessageWithStatus{
                     message: self.clone(),
