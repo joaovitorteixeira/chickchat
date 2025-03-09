@@ -4,16 +4,13 @@ use crate::{
     Result,
 };
 use rocket::{
-    response::{
+    form::{self, FromForm, Error}, response::{
         status::Created,
         stream::{Event, EventStream},
-    },
-    serde::{json::Json, Deserialize, Serialize},
-    tokio::{
+    }, serde::{json::Json, Deserialize, Serialize}, tokio::{
         select,
         sync::broadcast::{error::RecvError, Sender},
-    },
-    Shutdown, State,
+    }, Shutdown, State
 };
 use rocket_db_pools::{diesel::prelude::*, Connection};
 
@@ -29,12 +26,23 @@ pub struct Message {
     pub user_id: String,
 }
 
+fn validate_ulid_length<'v>(value: &Option<String>) -> form::Result<'v, ()> {
+    if let Some(value) = value {
+        if value.len() != ulid::ULID_LEN {
+            Err(Error::validation("length must be 26 characters"))?;
+        }
+    }
+
+    Ok(())
+    
+}
+
 #[derive(FromForm)]
 pub struct ListMessage {
     #[field(validate = range(1..=100))]
     limit: u8,
 
-    #[field(validate = len(ulid::ULID_LEN..=ulid::ULID_LEN))]
+    #[field(validate = validate_ulid_length())]
     last_id: Option<String>,
 }
 
