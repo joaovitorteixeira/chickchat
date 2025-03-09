@@ -17,6 +17,7 @@ reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 leptos_icons = "0.5.0"
 icondata = "0.5.0"
+leptos-use = "0.15.6"
 # utils
 # strum = { version = "0.25", features = ["derive", "strum_macros"] }
 # strum_macros = "0.25"

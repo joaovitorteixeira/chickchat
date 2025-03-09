@@ -13,7 +13,7 @@ pub fn ChatWindow() -> impl IntoView {
 
     view! {
         <div class="chat-window">
-            <MessageList messages=messages />
+            <MessageList messages=messages chat_id="TODO".to_string() />
             <MessageInput />
         </div>
     }

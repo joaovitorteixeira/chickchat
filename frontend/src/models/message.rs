@@ -57,4 +57,18 @@ impl Message {
             },
         }
     }
+
+    pub async fn list(limit: u8, last_id: Option<String>, chat_id: String) -> Vec<MessageWithStatus> {
+        let client = Client::new();
+        let mut query = vec![("limit", limit.to_string())];
+
+        if let Some(last_id) = last_id {
+            query.push(("last_id", last_id));
+        }
+
+        let messages = client.get(format!("http://127.0.0.1:8000/chat/{}/message",chat_id))
+        .query(&query).send().await.unwrap().json::<Vec<Message>>().await.unwrap();
+
+        messages.iter().map(|message| MessageWithStatus{message: message.clone(), status: MessageStatus::Sent}).collect()
+    }
 }
