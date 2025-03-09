@@ -9,6 +9,7 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
     let set_message = use_context::<WriteSignal<Vec<MessageWithStatus>>>().expect("to have found the setter provided");
     let (has_more, set_has_more) = signal(true);
     let el = NodeRef::<Div>::new();
+    //TODO: any way to improve this?
     let chat_id = Arc::new(chat_id);
     let get_old_messages= async move |chat_id: String| -> bool {
         if has_more.get() == false {

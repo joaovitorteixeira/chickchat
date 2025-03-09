@@ -1,15 +1,17 @@
+use std::collections::HashMap;
+
 use crate::{
     database::DbConn,
-    schema::message::{self, id},
+    schema::message,
     Result,
 };
 use rocket::{
-    form::{self, FromForm, Error}, response::{
+    form::{self, Error, FromForm}, response::{
         status::Created,
         stream::{Event, EventStream},
     }, serde::{json::Json, Deserialize, Serialize}, tokio::{
         select,
-        sync::broadcast::{error::RecvError, Sender},
+        sync::{broadcast::{error::RecvError, Sender}, RwLock},
     }, Shutdown, State
 };
 use rocket_db_pools::{diesel::prelude::*, Connection};
@@ -51,8 +53,11 @@ pub async fn send_message(
     chat_id: &str,
     mut message: Json<Message>,
     mut db_conn: Connection<DbConn>,
-    queue: &State<Sender<Message>>,
+    channel_map: &State<RwLock<HashMap<String, Sender<Message>>>>,
 ) -> Result<Created<Json<Message>>> {
+    print!("getting channel");
+    let queue = get_channel(chat_id, channel_map).await;
+    print!("got channel");
     message.chat_id = chat_id.to_string();
     message.id = ulid::Ulid::new().to_string();
 
@@ -90,7 +95,7 @@ pub async fn list_messages(
 
     let messages = query
         .select(message::all_columns)
-        .order(id.desc())
+        .order(message::id.desc())
         .limit(list_query.limit.into())
         .load(&mut db_conn)
         .await?;
@@ -98,12 +103,13 @@ pub async fn list_messages(
     Ok(Json(messages))
 }
 
-#[get("/event")]
+#[get("/<chat_id>/event")]
 pub async fn get_message_event(
-    queue: &State<Sender<Message>>,
+    chat_id: &str,
+    chat_map: &State<RwLock<HashMap<String, Sender<Message>>>>,
     mut end: Shutdown,
 ) -> EventStream![] {
-    let mut rx = queue.subscribe();
+    let mut rx = get_channel(chat_id, chat_map).await.subscribe();
 
     EventStream! {
         loop {
@@ -119,4 +125,19 @@ pub async fn get_message_event(
             yield Event::json(&msg);
         }
     }
+}
+
+async fn get_channel(chat_id: &str, chat_map: &State<RwLock<HashMap<String, Sender<Message>>>>) -> Sender<Message> {
+    {
+        let read_guard = chat_map.read().await;
+        if let Some(sender) = read_guard.get(chat_id) {
+            return sender.clone();
+        }
+    }
+
+    let mut write_guard = chat_map.write().await;
+    let sender = Sender::new(1024);
+    write_guard.insert(chat_id.to_string(), sender.clone());
+
+    sender
 }

@@ -1,6 +1,11 @@
+use std::collections::HashMap;
+
 use cors::CORS;
 use message::{get_message_event, list_messages, send_message, Message};
-use rocket::{response::Debug, tokio::sync::broadcast::channel};
+use rocket::{
+    response::Debug,
+    tokio::sync::{broadcast::Sender, RwLock},
+};
 
 #[macro_use]
 extern crate rocket;
@@ -15,7 +20,7 @@ pub mod schema;
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .manage(channel::<Message>(1024).0)
+        .manage(RwLock::new(HashMap::<String, Sender<Message>>::new()))
         .mount(
             "/chat",
             routes![send_message, list_messages, get_message_event],

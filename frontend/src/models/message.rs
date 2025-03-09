@@ -10,7 +10,7 @@ pub enum MessageStatus {
 #[derive(Clone, Debug)]
 pub struct MessageWithStatus {
     pub message: Message,
-    pub status: MessageStatus,
+    pub _status: MessageStatus,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -48,12 +48,12 @@ impl Message {
 
                 MessageWithStatus{
                     message: self.clone(),
-                    status: MessageStatus::Sent,
+                    _status: MessageStatus::Sent,
                 }
             },
             Err(_) => MessageWithStatus{
                 message: self.clone(),
-                status: MessageStatus::Failed,
+                _status: MessageStatus::Failed,
             },
         }
     }
@@ -69,6 +69,6 @@ impl Message {
         let messages = client.get(format!("http://127.0.0.1:8000/chat/{}/message",chat_id))
         .query(&query).send().await.unwrap().json::<Vec<Message>>().await.unwrap();
 
-        messages.iter().map(|message| MessageWithStatus{message: message.clone(), status: MessageStatus::Sent}).collect()
+        messages.iter().map(|message| MessageWithStatus{message: message.clone(), _status: MessageStatus::Sent}).collect()
     }
 }
