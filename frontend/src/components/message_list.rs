@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use leptos::{html::Div, prelude::*, task::spawn_local};
+use leptos::{html::Div, prelude::*, task::spawn_local,};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
 use crate::models::message::{Message, MessageWithStatus};
 
 #[component]
 pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String) -> impl IntoView {
-    let set_message = use_context::<WriteSignal<Vec<MessageWithStatus>>>().expect("to have found the setter provided");
+    let set_messages = use_context::<WriteSignal<Vec<MessageWithStatus>>>().expect("to have found the setter provided");
     let (has_more, set_has_more) = signal(true);
     let el = NodeRef::<Div>::new();
     //TODO: any way to improve this?
@@ -19,7 +19,7 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
         let old_messages = Message::list(10, messages.read().last().map(|m| m.message.id.clone()).flatten(), chat_id).await;
         
         set_has_more.set(!old_messages.is_empty());
-        set_message.update(|data| {
+        set_messages.update(|data| {
             data.extend(old_messages);
         });
 
@@ -40,6 +40,13 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
                     }
                 }
             });
+        }
+    });
+
+    Effect::new({
+        let chat_id = Arc::clone(&chat_id);
+        move |_| {
+            Message::on_message(chat_id.to_string(), set_messages);
         }
     });
 

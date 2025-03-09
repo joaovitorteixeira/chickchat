@@ -1,3 +1,4 @@
+use leptos::{prelude::{Write, WriteSignal}, wasm_bindgen::{prelude::Closure, JsCast}, web_sys::{EventSource, MessageEvent}};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +14,7 @@ pub struct MessageWithStatus {
     pub _status: MessageStatus,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Message {
     pub id: Option<String>,
     pub content:String,
@@ -70,5 +71,23 @@ impl Message {
         .query(&query).send().await.unwrap().json::<Vec<Message>>().await.unwrap();
 
         messages.iter().map(|message| MessageWithStatus{message: message.clone(), _status: MessageStatus::Sent}).collect()
+    }
+
+    pub fn on_message(channel_id: String, set_messages: WriteSignal<Vec<MessageWithStatus>>) {
+        let chat_id = channel_id.clone();
+        let event_source = EventSource::new(&format!("http://127.0.0.1:8000/chat/{}/event", chat_id)).unwrap();
+        let on_message = Closure::wrap(Box::new(move |event: MessageEvent| {
+            let data = event.data().as_string().unwrap();
+            set_messages.write().insert(0, MessageWithStatus {
+                message: serde_json::from_str(&data).unwrap(),
+                _status: MessageStatus::Sent,
+            });
+        }) as Box<dyn FnMut(MessageEvent)>);
+
+        // Add the event listener to the EventSource
+        event_source.add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
+
+        // Keep the closure alive
+        on_message.forget();
     }
 }
