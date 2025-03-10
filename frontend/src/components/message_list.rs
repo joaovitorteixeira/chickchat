@@ -1,8 +1,53 @@
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
 
 use leptos::{html::Div, prelude::*, task::spawn_local,};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
 use crate::models::{message::{Message, MessageWithStatus}, user::User};
+
+type HasMoreTuple = (ReadSignal<bool>,  WriteSignal<bool>); 
+type MessagesTuple = (ReadSignal<Vec<MessageWithStatus>>,WriteSignal<Vec<MessageWithStatus>> );
+
+async fn get_old_messages(
+    (has_more, set_has_more): HasMoreTuple, 
+    (messages, set_messages): MessagesTuple, 
+    chat_id: String
+) {
+    if has_more.get_untracked() == false {
+        return;
+    }
+    let get_last_message_id = move || messages.read_untracked().last().map(|m| m.message.id.clone()).flatten();
+    let old_messages = Message::list(10, get_last_message_id(), chat_id.clone()).await;
+    
+    set_has_more.set(!old_messages.is_empty());
+    set_messages.update(|data| {
+        data.extend(old_messages);
+    });
+}
+
+fn load_messages_on_mount(
+    (has_more, set_has_more): HasMoreTuple, 
+    (messages, set_messages): MessagesTuple, 
+    div_element: NodeRef<Div>,
+    chat_id: String
+) -> String {
+    let cloned_chat_id = Rc::new(chat_id.clone());
+
+    Effect::new(move || {
+        let chat_id = Rc::clone(&cloned_chat_id);
+        spawn_local(async move {
+            while has_more.get_untracked() {
+                get_old_messages((has_more, set_has_more), (messages, set_messages), chat_id.to_string()).await;
+                let div_el = div_element.get_untracked().unwrap();
+
+                if div_el.scroll_height() > div_el.client_height() {
+                    break;
+                }
+            }
+        });
+    });
+
+    chat_id.to_string()
+}
 
 #[component]
 pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String) -> impl IntoView {
@@ -10,39 +55,14 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
     let (has_more, set_has_more) = signal(true);
     let el = NodeRef::<Div>::new();
     let user = User::get_user_from_session_storage();
+    let chat_id = load_messages_on_mount(
+        (has_more, set_has_more), 
+        (messages, set_messages), 
+        el, 
+        chat_id
+    );
     //TODO: any way to improve this?
     let chat_id = Arc::new(chat_id);
-    let get_old_messages= async move |chat_id: String| -> bool {
-        if has_more.get() == false {
-            return false;
-        }
-
-        let old_messages = Message::list(10, messages.read().last().map(|m| m.message.id.clone()).flatten(), chat_id).await;
-        
-        set_has_more.set(!old_messages.is_empty());
-        set_messages.update(|data| {
-            data.extend(old_messages);
-        });
-
-        has_more.get()
-    };
-
-    Effect::new({
-        let chat_id = Arc::clone(&chat_id);
-        move |_| {
-            let chat_id = Arc::clone(&chat_id);
-            spawn_local(async move {
-                while has_more.get(){
-                    get_old_messages(chat_id.to_string()).await;
-                    let div_el = el.get().unwrap();
-
-                    if div_el.scroll_height() > div_el.client_height() {
-                        break;
-                    }
-                }
-            });
-        }
-    });
 
     Effect::new({
         let chat_id = Arc::clone(&chat_id);
@@ -56,7 +76,7 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
         move |_| {
             let chat_id = Arc::clone(&chat_id);
             async move {
-                get_old_messages(chat_id.to_string()).await;       
+                get_old_messages((has_more, set_has_more), (messages, set_messages),chat_id.to_string()).await;       
         }},
         UseInfiniteScrollOptions::default().distance(10.0).direction(Direction::Top),
     );
