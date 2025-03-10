@@ -1,6 +1,8 @@
 use leptos::{prelude::{Write, WriteSignal}, wasm_bindgen::{prelude::Closure, JsCast}, web_sys::{EventSource, MessageEvent}};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use crate::util::env::Env;
+
 use super::user::User;
 
 #[derive(Clone, Debug)]
@@ -35,8 +37,7 @@ impl Message {
      pub async fn send(&mut self) -> MessageWithStatus {
         let client = Client::new();
         let fetcher = client
-        // TODO: Change to env
-            .post(format!("http://127.0.0.1:8000/chat/{}/message", self.chat_id))
+            .post(format!("{}/chat/{}/message", Env::get_backend_url(),self.chat_id))
             .json(&self)
             .send().await;
         
@@ -68,7 +69,7 @@ impl Message {
             query.push(("last_id", last_id));
         }
 
-        let messages = client.get(format!("http://127.0.0.1:8000/chat/{}/message",chat_id))
+        let messages = client.get(format!("{}/chat/{}/message",Env::get_backend_url(),chat_id))
         .query(&query).send().await.unwrap().json::<Vec<Message>>().await.unwrap();
 
         messages.iter().map(|message| MessageWithStatus{message: message.clone(), _status: MessageStatus::Sent}).collect()
@@ -76,7 +77,7 @@ impl Message {
 
     pub fn on_message(channel_id: String, set_messages: WriteSignal<Vec<MessageWithStatus>>) {
         let chat_id = channel_id.clone();
-        let event_source = EventSource::new(&format!("http://127.0.0.1:8000/chat/{}/event", chat_id)).unwrap();
+        let event_source = EventSource::new(&format!("{}/chat/{}/event",Env::get_backend_url(), chat_id)).unwrap();
         let on_message = Closure::wrap(Box::new(move |event: MessageEvent| {
             let data = event.data().as_string().unwrap();
             let message = MessageWithStatus {
