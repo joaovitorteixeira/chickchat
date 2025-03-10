@@ -19,28 +19,21 @@ impl Default for User {
 impl User {
     pub fn get_user_from_session_storage() -> Self {
         let local_storage = window().local_storage().ok().flatten();
-        let local_storage_clone = local_storage.clone();
-        let user = local_storage
-            .and_then(|storage| {
-                storage
-                    .get_item("user")
-                    .ok()
-                    .flatten()
-                    .and_then(|value| serde_json::from_str::<User>(&value).ok())
-            })
-            .unwrap_or_else(|| {
-                if let Some(storage) = local_storage_clone {
-                    let new_user = User::default();
-                    storage
-                        .set_item("user", &serde_json::to_string(&new_user).unwrap())
-                        .expect("Failed to save user to local storage");
-                    new_user
-                } else {
-                    User::default()
+        if let Some(storage) = local_storage {
+            if let Ok(Some(value)) = storage.get_item("user") {
+                if let Ok(user) = serde_json::from_str::<User>(&value) {
+                    return user;
                 }
-            });
+            }
 
-        user
+            let new_user = User::default();
+            storage
+                .set_item("user", &serde_json::to_string(&new_user).unwrap())
+                .expect("Failed to save user to local storage");
+            new_user
+        } else {
+            User::default()
+        }
     }
 
     fn generate_random_string(length: usize) -> String {
