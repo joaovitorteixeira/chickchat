@@ -11,3 +11,10 @@ diesel::table! {
         user_id -> Char,
     }
 }
+
+diesel::table! {
+    user (username) {
+        #[max_length = 26]
+        username -> Char,
+    }
+}

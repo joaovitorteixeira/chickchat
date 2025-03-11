@@ -2,7 +2,7 @@
 
 This app is my first fullstack Rust application. It's written in Leptos for the fronted (CSR) and Rocket for the backend.
 
-## Leptos
+## Frontend
 
 To execute the frontend you can run:
 
