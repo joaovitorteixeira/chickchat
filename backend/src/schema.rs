@@ -13,8 +13,15 @@ diesel::table! {
 }
 
 diesel::table! {
-    user (username) {
+    user (id) {
         #[max_length = 26]
-        username -> Char,
+        id -> Char,
+        #[max_length = 32]
+        username -> Varchar,
     }
 }
+
+diesel::allow_tables_to_appear_in_same_query!(
+    message,
+    user,
+);
