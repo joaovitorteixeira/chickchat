@@ -25,7 +25,7 @@ pub struct Message {
     pub content: String,
     #[serde(skip_deserializing)]
     pub chat_id: String,
-    pub user_id: String,
+    pub member_id: String,
 }
 
 fn validate_ulid_length<'v>(value: &Option<String>) -> form::Result<'v, ()> {
@@ -55,9 +55,8 @@ pub async fn send_message(
     mut db_conn: Connection<DbConn>,
     channel_map: &State<RwLock<HashMap<String, Sender<Message>>>>,
 ) -> Result<Created<Json<Message>>> {
-    print!("getting channel");
     let queue = get_channel(chat_id, channel_map).await;
-    print!("got channel");
+
     message.chat_id = chat_id.to_string();
     message.id = ulid::Ulid::new().to_string();
 

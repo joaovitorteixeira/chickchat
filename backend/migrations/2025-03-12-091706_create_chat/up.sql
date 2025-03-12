@@ -1,7 +1,7 @@
 -- Your SQL goes here
 create table chat (
     id char(26),
-    created_at timestamp not null,
+    created_at timestamp not null default current_timestamp,
     name varchar(32),
 
     PRIMARY KEY (id)

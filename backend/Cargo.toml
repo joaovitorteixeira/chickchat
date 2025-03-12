@@ -5,8 +5,9 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5", features = ["json"] }
-diesel = { version = "2" }
+diesel = { version = "2", features = ["chrono"] }
 ulid = "1.2"
+chrono = "0.4.40"
 
 
 [dependencies.rocket_db_pools]
