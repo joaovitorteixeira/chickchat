@@ -1,5 +1,6 @@
 use frontend::App;
 use leptos::prelude::*;
+extern crate dotenv_codegen;
 
 fn main() {
     // set up logging
