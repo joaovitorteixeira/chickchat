@@ -1,12 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    database::DbConn,
-    schema::message,
-    Result,
+    database::DbConn, schema::message, util::pagination::PaginationRequest, Result
 };
 use rocket::{
-    form::{self, Error, FromForm}, response::{
+     response::{
         status::Created,
         stream::{Event, EventStream},
     }, serde::{json::Json, Deserialize, Serialize}, tokio::{
@@ -26,26 +24,6 @@ pub struct Message {
     #[serde(skip_deserializing)]
     pub chat_id: String,
     pub member_id: String,
-}
-
-fn validate_ulid_length<'v>(value: &Option<String>) -> form::Result<'v, ()> {
-    if let Some(value) = value {
-        if value.len() != ulid::ULID_LEN {
-            Err(Error::validation("length must be 26 characters"))?;
-        }
-    }
-
-    Ok(())
-    
-}
-
-#[derive(FromForm)]
-pub struct ListMessage {
-    #[field(validate = range(1..=100))]
-    limit: u8,
-
-    #[field(validate = validate_ulid_length())]
-    last_id: Option<String>,
 }
 
 #[post("/<chat_id>/message", data = "<message>")]
@@ -82,12 +60,13 @@ pub async fn send_message(
 pub async fn list_messages(
     chat_id: &str,
     mut db_conn: Connection<DbConn>,
-    list_query: ListMessage,
+    list_query: PaginationRequest,
 ) -> Result<Json<Vec<Message>>> {
     let mut query = message::table
         .filter(message::chat_id.eq(chat_id))
         .into_boxed();
-
+    
+    // TODO - How can I turn this code into a generic pagination function?
     if let Some(last_id) = list_query.last_id {
         query = query.filter(message::id.lt(last_id));
     }

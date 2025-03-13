@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chat::create_chat;
+use chat::{create_chat, list_chats};
 use cors::CORS;
 use message::{get_message_event, list_messages, send_message, Message};
 use rocket::{
@@ -18,6 +18,7 @@ mod cors;
 mod database;
 mod message;
 pub mod schema;
+pub mod util;
 
 #[launch]
 fn rocket() -> _ {
@@ -25,7 +26,13 @@ fn rocket() -> _ {
         .manage(RwLock::new(HashMap::<String, Sender<Message>>::new()))
         .mount(
             "/chat",
-            routes![create_chat, send_message, list_messages, get_message_event],
+            routes![
+                list_chats,
+                create_chat,
+                send_message,
+                list_messages,
+                get_message_event
+            ],
         )
         .attach(database::stage())
         .attach(CORS)
