@@ -1,5 +1,4 @@
 use leptos::prelude::window;
-use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -11,7 +10,7 @@ impl Default for User {
     fn default() -> Self {
         Self {
             // TODO: it should get the user id from the server
-            id: Self::generate_random_string(26),
+            id: "01JPG9K5TJB2H7WYBM7R0A0Z3N".to_string(),
         }
     }
 }
@@ -34,13 +33,5 @@ impl User {
         } else {
             User::default()
         }
-    }
-
-    fn generate_random_string(length: usize) -> String {
-        rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(length)
-            .map(char::from)
-            .collect()
     }
 }

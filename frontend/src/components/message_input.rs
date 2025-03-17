@@ -7,7 +7,8 @@ use crate::models::{message::{Message, MessageWithStatus}, user::User};
 
 async fn send_message(input: &str) -> MessageWithStatus {
         let user = User::get_user_from_session_storage();
-        let mut message = Message::new(input.to_string(), user.id, "TODO".to_string());
+        // TODO: chat_id should be dynamic
+        let mut message = Message::new(input.to_string(), user.id, "01JP51CZCJ63QC5F74T9RYDDSA".to_string());
         let message_data = message.send().await;
 
         message_data

@@ -23,15 +23,15 @@ pub struct Message {
     pub content:String,
 
     pub chat_id: String,
-    pub user_id: String,
+    pub member_id: String,
 
     #[serde(skip_serializing, skip_deserializing)]
     pub is_sent: bool,
 }
 
 impl Message {
-    pub fn new(content: String, user_id: String, chat_id: String) -> Self {
-        Self { content, user_id, is_sent: false, chat_id, id: None }
+    pub fn new(content: String, member_id: String, chat_id: String) -> Self {
+        Self { content, member_id, is_sent: false, chat_id, id: None }
     }
 
      pub async fn send(&mut self) -> MessageWithStatus {
@@ -86,7 +86,7 @@ impl Message {
             };
             let user = User::get_user_from_session_storage();
             
-            if message.message.user_id != user.id {
+            if message.message.member_id != user.id {
                 set_messages.write().insert(0, message);
             }
         }) as Box<dyn FnMut(MessageEvent)>);
