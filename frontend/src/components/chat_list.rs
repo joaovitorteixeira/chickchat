@@ -5,9 +5,9 @@ use leptos::{html::Div, prelude::*, reactive::wrappers::write::SignalSetter, Par
 use leptos_router::{hooks::query_signal, params::Params};
 use leptos_use::use_infinite_scroll;
 
-#[derive(Params, PartialEq)]
+#[derive(Params, PartialEq, Default)]
 pub struct ChatQueryParam {
-    chat_id: Option<String>,
+    pub chat_id: Option<String>,
 }
 
 #[component]

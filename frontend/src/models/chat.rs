@@ -1,7 +1,9 @@
+use leptos::prelude::*;
+use leptos_router::hooks::use_query;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::util::env::Env;
+use crate::{components::chat_list::ChatQueryParam, util::env::Env};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Chat {
@@ -27,5 +29,11 @@ impl Chat {
             Ok(response) => response.json::<Vec<Chat>>().await.unwrap(),
             Err(_) => vec![],
         }
+    }
+
+    pub fn get_id_from_query() -> Memo<Option<String>> {
+        let query = use_query::<ChatQueryParam>();
+        
+        Memo::new(move |_| query.read().as_ref().ok().and_then(|q| q.chat_id.clone()))
     }
 }
