@@ -32,11 +32,6 @@ body {
   align-items: center;
 }
 
-.buttons {
-  display: flex;
-  justify-content: space-evenly;
-}
-
 h1,
 h2,
 h3,
@@ -48,8 +43,7 @@ h6 {
   padding: 2rem;
 }
 
-p,
-button {
+p {
   margin: var(--size-6);
 }
 
@@ -86,16 +80,23 @@ button {
   border-style: solid none none none;
   border-color: var(--primary-color-lightest);
   border-width: 1px;
+  border-radius: 0;
   background: var(--secondary-color);
   color: var(--primary-color);
-  cursor: pointer;
+  margin: 1px;
   height: 4rem;
-}
-
-.chat-item-title {
   font-weight: normal;
   font-size: 1rem;
-  margin-left: 1rem;
+  padding: 1rem;
+  justify-content: flex-start;
+  align-items: start;
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  box-shadow: none;
+  background: var(--secondary-color-dark);
+  transform: scale(1.05);
 }
 
 .chat-window {
@@ -125,9 +126,7 @@ button {
 
 .message-send {
   height: 3rem;
-  padding: 0 1rem;
   border-radius: 5px;
-  cursor: pointer;
   margin: 1px;
   align-self: flex-end;
   background: var(--secondary-color-dark);

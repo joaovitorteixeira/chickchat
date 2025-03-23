@@ -1,5 +1,5 @@
 use std::{pin::Pin, rc::Rc, sync::Arc};
-use leptos::{html::Div, logging::log, prelude::*, task::spawn_local};
+use leptos::{html::Div, prelude::*, task::spawn_local};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
 use crate::{models::{message::{Message, MessageWithStatus}, user::User}, util::infinite_scroll::InfiniteScroll};
 
@@ -25,10 +25,8 @@ fn load_messages_on_mount(
             let (has_more, _) = infinite_scroll.has_more_tuple;
             let (messages, _) = infinite_scroll.messages_tuple;
             let get_last_id = || messages.read_untracked().last().and_then(|m| m.message.id.clone());
-            log!("{}", has_more.get_untracked());
             while has_more.get_untracked() {
                 infinite_scroll.get_old_items(get_last_id, get_message_fetcher(chat_id.to_string())).await;
-                log!("{}", has_more.get_untracked());
                 let div_el = div_element.get_untracked().unwrap();
 
                 if div_el.scroll_height() > div_el.client_height() {
@@ -88,18 +86,17 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
                 messages
                     .read()
                     .iter()
-                    .enumerate()
-                    .map(|(_, new_message)| {
+                    .map(|message| {
                         view! {
                             <div
                                 class="message-item"
-                                style:align-self=if new_message.message.member_id != user.id {
+                                style:align-self=if message.message.member_id != user.id {
                                     "flex-start"
                                 } else {
                                     "flex-end"
                                 }
                             >
-                                {new_message.message.content.clone()}
+                                {message.message.content.clone()}
                             </div>
                         }
                     })
