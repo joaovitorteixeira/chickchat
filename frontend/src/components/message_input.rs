@@ -29,7 +29,6 @@ pub fn MessageInput() -> impl IntoView {
 
         async move {
             if chat_id.is_none() {
-                set_is_sending.set(false);
                 return;
             } else {
                 if is_sending && !input.get().is_empty() {
