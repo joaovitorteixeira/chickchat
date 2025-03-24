@@ -1,7 +1,8 @@
 use std::{pin::Pin, rc::Rc, sync::Arc};
-use leptos::{html::Div, prelude::*, task::spawn_local};
+use leptos::{html::Div, leptos_dom::logging, prelude::*, task::spawn_local};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
-use crate::{models::{message::{Message, MessageWithStatus}, user::User}, util::infinite_scroll::InfiniteScroll};
+use crate::{models::{ message::{Message, MessageWithStatus}, user::User}, util::infinite_scroll::InfiniteScroll};
+use send_wrapper::SendWrapper;
 
 
 fn get_message_fetcher(chat_id: String) -> impl Fn(u8, Option<String>) -> Pin<Box<dyn std::future::Future<Output = Vec<MessageWithStatus>>>> {
@@ -49,20 +50,17 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
         (has_more, set_has_more),
         (messages, set_messages),
     ));
-    let chat_id = load_messages_on_mount(
+    let chat_id = Arc::new(load_messages_on_mount(
         Arc::clone(&infinity_scroll),
         el, 
-        chat_id
-    );
+        chat_id.clone()
+    ));
     let get_last_message_id = move || messages.read().last().and_then(|m| m.message.id.clone());
-    //TODO: any way to improve this?
-    let chat_id = Arc::new(chat_id);
+    let event_source = SendWrapper::new(Message::on_message(chat_id.to_string(), set_messages.clone()));
 
-    Effect::new({
-        let chat_id = Arc::clone(&chat_id);
-        move |_| {
-            Message::on_message(chat_id.to_string(), set_messages);
-        }
+    on_cleanup(move || {
+        logging::console_log("Closing event source");
+        event_source.close();
     });
 
     let _= use_infinite_scroll_with_options(

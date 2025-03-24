@@ -75,7 +75,7 @@ impl Message {
         messages.iter().map(|message| MessageWithStatus{message: message.clone(), _status: MessageStatus::Sent}).collect()
     }
 
-    pub fn on_message(channel_id: String, set_messages: WriteSignal<Vec<MessageWithStatus>>) {
+    pub fn on_message(channel_id: String, set_messages: WriteSignal<Vec<MessageWithStatus>>) -> EventSource {
         let chat_id = channel_id.clone();
         let event_source = EventSource::new(&format!("{}/chat/{}/event",Env::get_backend_url(), chat_id)).unwrap();
         let on_message = Closure::wrap(Box::new(move |event: MessageEvent| {
@@ -93,5 +93,7 @@ impl Message {
 
         event_source.add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
         on_message.forget();
+
+        event_source
     }
 }
