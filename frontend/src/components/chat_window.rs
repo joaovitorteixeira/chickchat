@@ -18,7 +18,9 @@ pub fn ChatWindow() -> impl IntoView {
                 set_messages.write().clear();
                 if chat_id.is_none() {
                     return view! {
-                        <div class="chat-window__empty">{"Select a chat to start chatting"}</div>
+                        <div class="chat-window__empty">
+                            {"Select a chat to start chatting"} <br /> {"🐤"}
+                        </div>
                     }
                         .into_any();
                 } else {

@@ -12,6 +12,24 @@ pub struct Chat {
 }
 
 impl Chat {
+    pub fn new(name: String) -> Self {
+        Self { name, id: None }
+    }
+
+    pub async fn create(self) -> Result<Self, reqwest::Error> {
+        let client = Client::new();
+        let fetcher = client
+        .post(format!("{}/chat", Env::get_backend_url()))
+        .json(&self)
+        .send().await;
+
+        let created_chat = fetcher?.json::<Chat>().await?;
+        Ok(Self {
+            id: created_chat.id,
+            name: self.name,
+        })
+    }
+
     pub async fn list(limit: u8, last_id: Option<String>) -> Vec<Chat> {
         let client = Client::new();
         let mut query = vec![("limit", limit.to_string())];

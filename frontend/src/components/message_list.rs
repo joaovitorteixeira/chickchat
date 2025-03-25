@@ -1,5 +1,5 @@
 use std::{pin::Pin, rc::Rc, sync::Arc};
-use leptos::{html::Div, leptos_dom::logging, prelude::*, task::spawn_local};
+use leptos::{html::Div, prelude::*, task::spawn_local};
 use leptos_use::{core::Direction, use_infinite_scroll_with_options, UseInfiniteScrollOptions};
 use crate::{models::{ message::{Message, MessageWithStatus}, user::User}, util::infinite_scroll::InfiniteScroll};
 use send_wrapper::SendWrapper;
@@ -59,7 +59,6 @@ pub fn MessageList(messages: ReadSignal<Vec<MessageWithStatus>>, chat_id: String
     let event_source = SendWrapper::new(Message::on_message(chat_id.to_string(), set_messages.clone()));
 
     on_cleanup(move || {
-        logging::console_log("Closing event source");
         event_source.close();
     });
 

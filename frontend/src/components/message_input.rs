@@ -73,11 +73,7 @@ pub fn MessageInput() -> impl IntoView {
                 prop:value=input
                 disabled=get_is_disabled
             />
-            <button
-                class="message-send"
-                on:click=move |_| set_is_sending.set(true)
-                disabled=get_is_disabled
-            >
+            <button on:click=move |_| set_is_sending.set(true) disabled=get_is_disabled>
                 <Icon
                     style="height: 2rem; width: 2rem;"
                     icon=Signal::derive(move || {
